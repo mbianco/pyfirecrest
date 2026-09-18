@@ -33,8 +33,24 @@ client = f7t.v2.Firecrest(
 )
 
 try:
+    # List available systems and pick the first one
     systems = client.systems()
-    print(f"Available systems: {systems}")
+    system = systems[0]["name"]
+    print(f"Available systems: {[s['name'] for s in systems]}")
+
+    # List files in a directory on the selected system
+    files = client.list_files(system, "/home/user")
+    print(f"Files: {[f['name'] for f in files]}")
+
+    # View the content of a file (up to 5 MB)
+    content = client.view(system, "/home/user/file.txt")
+    print(content)
+
+    # Submit a job and wait for it to complete
+    job = client.submit(system, "/home/user", script_str="#!/bin/bash\necho hello")
+    print(f"Submitted job with ID: {job['jobId']}")
+    job_info = client.wait_for_job(system, str(job["jobId"]))
+    print(f"Job completed: {job_info[0]['state']['current']}")
 except f7t.FirecrestException as e:
     # When the error comes from the responses to a firecrest request you will get a
     # `FirecrestException` and from this you can examine the http responses yourself
